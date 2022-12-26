@@ -18,6 +18,7 @@ int main(void) {
 
 	RectangleShape enemy[5];
 	int enemy_life[5];
+	//enemy 초기화
 	for (int i = 0; i< 5; i++) {
 		enemy[i].setSize(Vector2f(70, 70));
 		enemy[i].setFillColor(Color::Yellow);
@@ -61,6 +62,15 @@ int main(void) {
 		}
 		if (Keyboard::isKeyPressed(Keyboard::Right)) {
 			player.move(player_speed, 0);
+		}
+		if (Keyboard::isKeyPressed(Keyboard::Space)) {
+			for (int i = 0; i < 5; i++) {
+				enemy[i].setSize(Vector2f(70, 70));
+				enemy[i].setFillColor(Color::Yellow);
+				enemy_life[i] = 1;
+				enemy[i].setPosition(rand() % 300 + 300, rand() % 380);
+				window.draw(enemy[i]);
+			}
 		}
 
 		//충돌 처리를 enemy가 살아있을 때만 그리겠다. 
