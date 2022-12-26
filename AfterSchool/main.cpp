@@ -36,6 +36,7 @@ int main(void)
 		else if (Keyboard::isKeyPressed(Keyboard::Down)) {
 			player.move(0, 1);
 		}
+		window.clear(Color::Black);
 
 		window.draw(player);
 		window.display();
