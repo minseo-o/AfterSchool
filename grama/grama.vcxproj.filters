@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="addchar.c">
+    <ClCompile Include="gujochae.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
