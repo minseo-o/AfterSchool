@@ -29,6 +29,12 @@ int main(void) {
 	text.setFillColor(Color(255, 255, 255));//RGB로 흰색 표현
 	text.setPosition(0, 0);//텍스트 위치 0,0
 
+	//배경
+	Texture bg_texture;
+	bg_texture.loadFromFile("./resources/images/background.png");
+	Sprite bg_sprite;
+	bg_sprite.setTexture(bg_texture);
+	bg_sprite.setPosition(0, 0);
 
 	//네모 모양의 플레이어
 	RectangleShape player;
@@ -88,7 +94,7 @@ int main(void) {
 			}
 			}
 		}
-		spent_time = clock();
+		spent_time = clock()-start_time;
 		//방향키
 		if (Keyboard::isKeyPressed(Keyboard::Left))
 		{
@@ -127,8 +133,8 @@ int main(void) {
 			}
 			
 		}
-
-		sprintf(info, "score: %d  time : %d", player_score, (spent_time-start_time)/1000);
+		
+		sprintf(info, "score: %d  time : %d", player_score, (spent_time)/1000);
 		text.setString(info);
 		
 
@@ -140,9 +146,10 @@ int main(void) {
 		}
 		//화면이 열려져 있는 동안 계속 그려야 함
 		//draw는 나중에 호출할수록 우선순위가 높아짐
+		window.draw(bg_sprite);
 		window.draw(player);//플레이어 보여주기(그려주기)
 		window.draw(text);
-
+		
 		window.display();
 	}
 
