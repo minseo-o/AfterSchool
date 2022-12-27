@@ -15,9 +15,10 @@ int main(void) {
 	player.setSize(Vector2f(40, 40));
 	player.setPosition(100, 100);
 	window.draw(player);
-
+	int player_score = 0;
 	RectangleShape enemy[5];
 	int enemy_life[5];
+	int enemy_score = 100;// 적을 잡을 때 얻는 점수 
 	//enemy 초기화
 	for (int i = 0; i< 5; i++) {
 		enemy[i].setSize(Vector2f(70, 70));
@@ -34,7 +35,7 @@ int main(void) {
 	//사각형 색상 변경
 	player.setFillColor(Color::Red);
 
-	//플레이어 스피드 3으로 초기화
+	//플레이어 스피드 5으로 초기화
 	int player_speed = 5;
 
 	//윈도우가 열려있을 때 까지 반복
@@ -89,11 +90,12 @@ int main(void) {
 				if (player.getGlobalBounds().intersects(enemy[i].getGlobalBounds())) {
 					printf("enemy[%d]과 충돌\n",i);
 					enemy_life[i] -= 1;
+					player_score += enemy_score;
 				}
 			}
 		}
 		
-
+		printf("score : %d\n", player_score);
 
 		//60분에 1초마다 그렸다 지웠다를 반복하게 된다. 
 		window.clear(Color::Black);
