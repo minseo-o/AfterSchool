@@ -47,6 +47,23 @@ int main(void) {
 			switch (event.type) {
 			case Event::Closed:
 				window.close();
+
+			case Event::KeyPressed:
+			{
+				//스페이스 키 누르면 모든 enemy 다시 출현
+				//TODO 한 번 누를 때, 한 번만 적용하기
+				if (Keyboard::isKeyPressed(Keyboard::Space)) {
+					for (int i = 0; i < 5; i++) {
+						enemy[i].setSize(Vector2f(70, 70));
+						enemy[i].setFillColor(Color::Yellow);
+						enemy_life[i] = 1;
+						enemy[i].setPosition(rand() % 300 + 300, rand() % 380);
+						window.draw(enemy[i]);
+					}
+				}
+				break;
+				
+			}
 			}
 		}
 		//플레이어 움직임 구현
@@ -63,15 +80,7 @@ int main(void) {
 		if (Keyboard::isKeyPressed(Keyboard::Right)) {
 			player.move(player_speed, 0);
 		}
-		if (Keyboard::isKeyPressed(Keyboard::Space)) {
-			for (int i = 0; i < 5; i++) {
-				enemy[i].setSize(Vector2f(70, 70));
-				enemy[i].setFillColor(Color::Yellow);
-				enemy_life[i] = 1;
-				enemy[i].setPosition(rand() % 300 + 300, rand() % 380);
-				window.draw(enemy[i]);
-			}
-		}
+		
 
 		//충돌 처리를 enemy가 살아있을 때만 그리겠다. 
 		for (int i = 0; i < 5; i++) {
