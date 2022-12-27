@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="switch.c">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="rand.c">
+    <ClCompile Include="addchar.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
