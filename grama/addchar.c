@@ -4,22 +4,12 @@
 int main() {
     
 
-    char str[30] = "score : ";
+    char str[30];
     int score = 300;
-    char str2[30];
- 
-    //정수를 문자열로
-    itoa(score, str2, 10);
 
-    
-    strcat(str, str2);
+    sprintf(str, "score : %d", score);
     printf("%s", str);
 
-    
-
- 
-
-     
     return 0;
 
 }
