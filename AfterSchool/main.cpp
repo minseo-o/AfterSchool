@@ -19,6 +19,7 @@ int main(void) {
 	RenderWindow window(VideoMode(640, 480), "AfterSchool");
 	window.setFramerateLimit(60);//1초에 60장 보여준다. 플레이어가 빨리 가지 않도록 하기
 
+	//폰트
 	Font font;
 	font.loadFromFile("C:\\Windows\\Fonts\\Arial.ttf");//C드라이브에 있는 폰트 가져오기
 
@@ -41,24 +42,27 @@ int main(void) {
 	player.setSize(Vector2f(40, 40));//플레이어 사이즈
 	player.setPosition(100, 100);//플레이어 시작 위치
 	player.setFillColor(Color::Red);//플레이어 색상
-	int player_speed = 5;//플레이어 속도
+	int player_speed = 10;//플레이어 속도
 	int player_score = 0;//플레이어 점수
 
-
-	RectangleShape enemy[5];//적
-	int enemy_life[5];//적의 체력
+	//적
+	const int ENEMY_NUM = 20;
+	RectangleShape enemy[ENEMY_NUM];
+	int enemy_life[ENEMY_NUM];//적의 체력
 	int enemy_score = 100;//적을 잡을 때마다 얻는 점수
-
+	int enemy_speed[ENEMY_NUM];
+	//적 잡을 때 나는 소리 
 	SoundBuffer enemy_explosion_buffer;
 	enemy_explosion_buffer.loadFromFile("./resources/sounds/rumble.flac");
 	Sound enemy_explosion_sound;
 	enemy_explosion_sound.setBuffer(enemy_explosion_buffer);
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < ENEMY_NUM; i++)
 	{
 		enemy[i].setSize(Vector2f(70, 70));
 		enemy[i].setPosition(rand() % 300 + 300, rand() % 410);
 		enemy_life[i] = 1;
+		enemy_speed[i] = -(rand() % 5 + 1);
 		enemy[i].setFillColor(Color::Yellow);//적 색상
 	}
 
@@ -82,12 +86,13 @@ int main(void) {
 				//space키 누르면 모든 enemy 다시 출현
 				if (event.key.code == Keyboard::Space)
 				{
-					for (int i = 0; i < 5; i++)
+					for (int i = 0; i < ENEMY_NUM; i++)
 					{
 						enemy[i].setSize(Vector2f(70, 70));
 						enemy[i].setPosition(rand() % 300 + 300, rand() % 410);
 						enemy_life[i] = 1;
 						enemy[i].setFillColor(Color::Yellow);//적 색상
+						enemy_speed[i] = -(rand() % 5 + 1);
 					}
 				}
 				break;
@@ -115,10 +120,11 @@ int main(void) {
 
 		//enemy와의 충돌
 		//intersects : 플레이어와 적 사이에서 교집합이 있는가
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < ENEMY_NUM; i++)
 		{
 			if (enemy_life[i] > 0)
 			{
+				//enemy와 충돌
 				if (player.getGlobalBounds().intersects(enemy[i].getGlobalBounds()))
 				{
 					printf("enemy[%d]와의 충돌\n", i);
@@ -130,6 +136,7 @@ int main(void) {
 
 					}
 				}
+				enemy[i].move(enemy_speed[i],0);
 			}
 			
 		}
@@ -137,16 +144,16 @@ int main(void) {
 		sprintf(info, "score: %d  time : %d", player_score, (spent_time)/1000);
 		text.setString(info);
 		
-
+		
 		window.clear(Color::Black);//플레이어 자체 제거 (배경 지우기)
-
-		for (int i = 0; i < 5; i++)
+		window.draw(bg_sprite);
+		for (int i = 0; i < ENEMY_NUM; i++)
 		{
 			if (enemy_life[i] > 0)  window.draw(enemy[i]);//적 보여주기
 		}
 		//화면이 열려져 있는 동안 계속 그려야 함
 		//draw는 나중에 호출할수록 우선순위가 높아짐
-		window.draw(bg_sprite);
+		
 		window.draw(player);//플레이어 보여주기(그려주기)
 		window.draw(text);
 		
