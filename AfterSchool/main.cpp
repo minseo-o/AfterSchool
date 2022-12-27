@@ -9,6 +9,14 @@ int main(void) {
 	RenderWindow window(VideoMode(640, 480), "AfterSchool");
 	window.setFramerateLimit(60);
 	srand(time(0));
+	Font font;
+	font.loadFromFile("C:\\Windows\\Fonts\\arial.tff");
+	Text text;
+	text.setFont(font);
+	text.setCharacterSize(50);
+	text.setFillColor(Color(255, 255, 255));
+	text.setPosition(0, 0);
+	text.setString("scroe");
 
 	//사각형 창 그리기
 	RectangleShape player;
@@ -109,6 +117,7 @@ int main(void) {
 		//draw는 나중에 호출할 수록 우선순위가 높아진다. 
 
 		window.draw(player);
+		window.draw(text);
 		window.display();
 	}
 	return 0;
