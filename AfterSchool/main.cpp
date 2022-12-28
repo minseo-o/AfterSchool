@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <SFML/Audio.hpp>
+#include <Windows.h>
 
 using namespace sf;
 
@@ -10,7 +11,7 @@ struct Player {
 	RectangleShape sprite;
 	int speed;
 	int score;
-	int life = 3;
+	int life = 10;
 };
 
 struct Enemy {
@@ -20,12 +21,17 @@ struct Enemy {
 	int score;
 	SoundBuffer explosion_buffer;
 	Sound explosion_sound;
+	int respawn_time;
 };
+//전역변수
+const int ENEMY_NUM = 10;
+const int W_WIDTH = 1200, W_HEIGHT = 600;
+const int GO_WIDTH = 700, GO_HEIGHT = 300;
 
 int main(void)
 {
 	// 윈도창 생성
-	RenderWindow window(VideoMode(640, 480), "AfterSchool");
+	RenderWindow window(VideoMode(W_WIDTH, W_HEIGHT), "AfterSchool");
 	window.setFramerateLimit(60);
 
 	srand(time(0));
@@ -55,7 +61,7 @@ int main(void)
 	game_texture.loadFromFile("./resources/images/gameover.png");
 	Sprite gameover_sprite;
 	gameover_sprite.setTexture(game_texture);
-	gameover_sprite.setPosition((640-320)/2, (480-240)/2);
+	gameover_sprite.setPosition((W_WIDTH - GO_WIDTH)/2, (W_HEIGHT - GO_HEIGHT)/2);
 	// 플레이어
 	struct Player player;
 	player.sprite.setSize(Vector2f(40, 40));
@@ -65,7 +71,7 @@ int main(void)
 	player.score = 0;
 
 	// 적(enemy)
-	const int ENEMY_NUM = 10;
+	
 	struct Enemy enemy[ENEMY_NUM];
 
 	// enemy 초기화
@@ -75,10 +81,10 @@ int main(void)
 		enemy[i].explosion_buffer.loadFromFile("./resources/sounds/rumble.flac");
 		enemy[i].explosion_sound.setBuffer(enemy[i].explosion_buffer);
 		enemy[i].score = 100;
-
+		enemy[i].respawn_time = 8;
 		enemy[i].sprite.setSize(Vector2f(70, 70));
 		enemy[i].sprite.setFillColor(Color::Yellow);
-		enemy[i].sprite.setPosition(rand() % 300 + 300, rand() % 380);
+		enemy[i].sprite.setPosition(rand() % 300 + W_WIDTH*0.9, rand() % 580);
 		enemy[i].life = 1;
 		enemy[i].speed = -(rand() % 10 + 1);
 	}
@@ -106,7 +112,7 @@ int main(void)
 					{
 						enemy[i].sprite.setSize(Vector2f(70, 70));
 						enemy[i].sprite.setFillColor(Color::Yellow);
-						enemy[i].sprite.setPosition(rand() % 300 + 300, rand() % 380);
+						enemy[i].sprite.setPosition(rand() % 300 + W_WIDTH * 0.9, rand() % 580);
 						enemy[i].life = 1;
 						enemy[i].speed = -(rand() % 10 + 1);
 					}
@@ -141,6 +147,14 @@ int main(void)
 
 		for (int i = 0; i < ENEMY_NUM; i++)
 		{
+			//10초마다 enemy 젠
+			if (spent_time %(1000*enemy[i].respawn_time) < 1000 / 60 + 1) {
+				enemy[i].sprite.setSize(Vector2f(70, 70));
+				enemy[i].sprite.setFillColor(Color::Yellow);
+				enemy[i].sprite.setPosition(rand() % 300 + W_WIDTH * 0.9, rand() % 580);
+				enemy[i].life = 1;
+				enemy[i].speed = -(rand() % 10 + 1 + (spent_time/1000/ enemy[i].respawn_time));
+			}
 			if (enemy[i].life > 0)
 			{
 				// enemy와의 충돌
