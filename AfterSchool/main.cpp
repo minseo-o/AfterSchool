@@ -128,18 +128,18 @@ int main(void)
 				// 키보드를 눌렀을 때(누른 순간만을 감지)
 			case Event::KeyPressed:
 			{
-				// 스페이스 키 누르면 모든 enemy 다시 출현
-				if (event.key.code == Keyboard::Space)
-				{
-					for (int i = 0; i < ENEMY_NUM; i++)
-					{
-						enemy[i].sprite.setSize(Vector2f(70, 70));
-						enemy[i].sprite.setFillColor(Color::Yellow);
-						enemy[i].sprite.setPosition(rand() % 300 + W_WIDTH * 0.9, rand() % 580);
-						enemy[i].life = 1;
-						enemy[i].speed = -(rand() % 10 + 1);
-					}
-				}
+				//// 스페이스 키 누르면 모든 enemy 다시 출현
+				//if (event.key.code == Keyboard::Space)
+				//{
+				//	for (int i = 0; i < ENEMY_NUM; i++)
+				//	{
+				//		enemy[i].sprite.setSize(Vector2f(70, 70));
+				//		enemy[i].sprite.setFillColor(Color::Yellow);
+				//		enemy[i].sprite.setPosition(rand() % 300 + W_WIDTH * 0.9, rand() % 580);
+				//		enemy[i].life = 1;
+				//		enemy[i].speed = -(rand() % 10 + 1);
+				//	}
+				//}
 				break;
 			}
 
@@ -147,7 +147,8 @@ int main(void)
 		}
 
 		spent_time = clock() - start_time;
-
+		player.x = player.sprite.getPosition().x;
+		player.y = player.sprite.getPosition().y;
 		// 방향키 start
 		if (Keyboard::isKeyPressed(Keyboard::Left))
 		{
@@ -165,7 +166,16 @@ int main(void)
 		{
 			player.sprite.move(0, player.speed);
 		}	// 방향키 end
+		if (Keyboard::isKeyPressed(Keyboard::Space))
+		{
+			if (!bullet.is_fire) {
+				bullet.sprite.setPosition(player.x + 50, player.y + 15);
+				bullet.is_fire = 1;
 
+			}
+
+		}
+		
 
 
 		for (int i = 0; i < ENEMY_NUM; i++)
@@ -202,6 +212,14 @@ int main(void)
 				enemy[i].sprite.move(enemy[i].speed, 0);
 			}
 		}
+
+		//TODO : 총알이 한 번만 발사되는 버그 수정하기 
+		if (bullet.is_fire) {
+			bullet.sprite.move(bullet.speed, 0);
+			if (bullet.sprite.getPosition().x > W_WIDTH) {
+				bullet.is_fire = 0;
+			}
+		}
 		if (player.life <= 0) {
 			is_gameover = 1;
 		}
@@ -212,6 +230,9 @@ int main(void)
 
 		window.clear(Color::Black);
 		window.draw(bg_sprite);
+		if (bullet.is_fire) {
+			window.draw(bullet.sprite);
+		}
 		window.draw(bullet.sprite);
 		// draw는 나중에 호출할수록 우선순위가 높아짐
 		for (int i = 0; i < ENEMY_NUM; i++)
