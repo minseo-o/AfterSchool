@@ -19,10 +19,6 @@ struct Enemy {
 	RectangleShape sprite;
 	int speed;
 	int life;
-	int score;
-	SoundBuffer explosion_buffer;
-	Sound explosion_sound;
-	int respawn_time;
 };
 
 struct Bullet {
@@ -46,6 +42,11 @@ struct Textures {
 	Texture item_delay;
 	Texture item_speed;
 };
+struct SButters {
+	SoundBuffer BGM;
+	SoundBuffer bubble;
+	SoundBuffer gun;
+};
 
 //obj1과 obj2의 충돌하면 1반환, 충돌 안하면 0 반환 
 int is_collide(RectangleShape obj1, RectangleShape obj2) {
@@ -68,10 +69,13 @@ int main(void)
 	t.bullet.loadFromFile("./resources/images/bullet.png");
 	t.item_delay.loadFromFile("./resources/images/delay.png");
 	t.item_speed.loadFromFile("./resources/images/speed.png");
+	struct SButters sb;
+	sb.BGM.loadFromFile("./resources/sounds/bgm.ogg");
+	sb.bubble.loadFromFile("./resources/sounds/bubble.wav");
+	sb.gun.loadFromFile("./resources/sounds/bubble2.wav");
 	// 윈도창 생성
 	RenderWindow window(VideoMode(W_WIDTH, W_HEIGHT), "AfterSchool");
 	window.setFramerateLimit(60);
-
 	srand(time(0));
 
 	long start_time = clock();	// 게임 시작시간
@@ -79,10 +83,9 @@ int main(void)
 	int is_gameover = 0;
 	long fired_time = 0; //최근에 발사한 시간 
 	//BGM
-	SoundBuffer BGM_buffer;
-	BGM_buffer.loadFromFile("./resources/sounds/bgm.ogg");
+	
 	Sound BGM_sound;
-	BGM_sound.setBuffer(BGM_buffer);
+	BGM_sound.setBuffer(sb.BGM);
 	BGM_sound.setLoop(1);	//BMG 무한 반복 !
 	BGM_sound.play();
 
@@ -122,7 +125,8 @@ int main(void)
 	int bullet_deplay=500;
 	int bullet_idx = 0;
 	int bullet_speed = 20;
-
+	Sound Bullet_sound;
+	Bullet_sound.setBuffer(sb.gun);
 	struct Bullet bullet[BULLET_NUM];
 
 	for (int i = 0; i < BULLET_NUM; i++) {
@@ -135,18 +139,15 @@ int main(void)
 
 	// 적(enemy)
 	struct Enemy enemy[ENEMY_NUM];
-	
+	Sound enemy_explosion_sound;
+	enemy_explosion_sound.setBuffer(sb.bubble);
+	int enemy_score = 100;
+	int enemy_respawn_time = 8;
 	// enemy 초기화
 	for (int i = 0; i < ENEMY_NUM; i++)
 	{
-		// TODO : 굉장히 비효율적인 코드이므로 나중에 refactoring
 		enemy[i].sprite.setTexture(&t.enemy);
-		enemy[i].explosion_buffer.loadFromFile("./resources/sounds/bubble.wav");
-		enemy[i].explosion_sound.setBuffer(enemy[i].explosion_buffer);
-		enemy[i].score = 100;
-		enemy[i].respawn_time = 8;
 		enemy[i].sprite.setSize(Vector2f(70, 70));
-		
 		enemy[i].sprite.setPosition(rand() % 300 + W_WIDTH*0.9, rand() % 580);
 		enemy[i].life = 1;
 		enemy[i].speed = -(rand() % 10 + 1);
@@ -246,6 +247,7 @@ int main(void)
 					bullet[bullet_idx].is_fire = 1;
 					bullet_idx++;
 					bullet_idx = bullet_idx % BULLET_NUM;
+					Bullet_sound.play();
 					fired_time = spent_time;
 
 				}
@@ -271,12 +273,16 @@ int main(void)
 		for (int i = 0; i < ENEMY_NUM; i++)
 		{
 			//10초마다 enemy 젠
-			if (spent_time %(1000*enemy[i].respawn_time) < 1000 / 60 + 1) {
-				enemy[i].sprite.setSize(Vector2f(70, 70));
+			if (spent_time %(1000*enemy_respawn_time) < 1000 / 60 + 1) {
+				//게임이 진행중일 때만 적을 리스폰 시키겟다
+				if (!is_gameover) {
+					enemy[i].sprite.setSize(Vector2f(70, 70));
+
+					enemy[i].sprite.setPosition(rand() % 300 + W_WIDTH * 0.9, rand() % 580);
+					enemy[i].life = 1;
+					enemy[i].speed = -(rand() % 10 + 1 + (spent_time / 1000 / enemy_respawn_time));
+				}
 				
-				enemy[i].sprite.setPosition(rand() % 300 + W_WIDTH * 0.9, rand() % 580);
-				enemy[i].life = 1;
-				enemy[i].speed = -(rand() % 10 + 1 + (spent_time/1000/ enemy[i].respawn_time));
 			}
 			//Enemy update
 			if (enemy[i].life > 0)
@@ -288,12 +294,12 @@ int main(void)
 				{
 				
 					enemy[i].life -= 1;
-					player.score += enemy[i].score;
+					player.score += enemy_score;
 
-					// TODO : 코드 refactoring 필요
+			
 					if (enemy[i].life == 0)
 					{
-						enemy[i].explosion_sound.play();
+						enemy_explosion_sound.play();
 					}
 				}
 				//적이 왼쪽 끝에 진입하려는 순간
@@ -307,12 +313,12 @@ int main(void)
 					if (is_collide(bullet[j].sprite, enemy[i].sprite)) {
 						if (bullet[j].is_fire) {
 							enemy[i].life -= 1;
-							player.score += enemy[i].score;
+							player.score += enemy_score;
 
 							// TODO : 코드 refactoring 필요
 							if (enemy[i].life == 0)
 							{
-								enemy[i].explosion_sound.play();
+								enemy_explosion_sound.play();
 							}
 							bullet[j].is_fire = 0;
 						}
