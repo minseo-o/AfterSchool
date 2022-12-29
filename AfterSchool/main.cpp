@@ -138,6 +138,10 @@ int main(void)
 	// 윈도가 열려있을 때까지 반복
 	while (window.isOpen())
 	{
+		spent_time = clock() - start_time;
+		player.x = player.sprite.getPosition().x;
+		player.y = player.sprite.getPosition().y;
+
 		Event event;
 		while (window.pollEvent(event))
 		{
@@ -168,9 +172,9 @@ int main(void)
 			}
 		}
 
-		spent_time = clock() - start_time;
-		player.x = player.sprite.getPosition().x;
-		player.y = player.sprite.getPosition().y;
+		
+
+		/* player update*/
 		// 방향키 start
 		if (Keyboard::isKeyPressed(Keyboard::Left))
 		{
@@ -188,6 +192,23 @@ int main(void)
 		{
 			player.sprite.move(0, player.speed);
 		}	// 방향키 end
+		//Player 이동범위 제한
+		// TODO: 오른쪽 아래쪽 제한을 의도대로 고치기
+		if (player.sprite.getPosition().x <0) {
+			player.sprite.setPosition(0, player.sprite.getPosition().y);
+		}
+		
+		else if (player.sprite.getPosition().x > W_WIDTH) {
+			player.sprite.setPosition(W_WIDTH, player.sprite.getPosition().y);
+		}
+		if (player.sprite.getPosition().y < 0) {
+			player.sprite.setPosition( player.sprite.getPosition().x,0);
+		}
+		else if (player.sprite.getPosition().y > W_HEIGHT) {
+			player.sprite.setPosition(player.sprite.getPosition().x, W_HEIGHT);
+		}
+		 
+		/* bullet undate */
 		if (Keyboard::isKeyPressed(Keyboard::Space))
 		{
 			if (!bullet.is_fire) {
@@ -197,9 +218,15 @@ int main(void)
 			}
 
 		}
-		
+		//TODO : 총알이 한 번만 발사되는 버그 수정하기 
+		if (bullet.is_fire) {
+			bullet.sprite.move(bullet.speed, 0);
+			if (bullet.sprite.getPosition().x > W_WIDTH) {
+				bullet.is_fire = 0;
+			}
+		}
 
-
+		/* enemy update*/
 		for (int i = 0; i < ENEMY_NUM; i++)
 		{
 			//10초마다 enemy 젠
@@ -210,6 +237,7 @@ int main(void)
 				enemy[i].life = 1;
 				enemy[i].speed = -(rand() % 10 + 1 + (spent_time/1000/ enemy[i].respawn_time));
 			}
+			//Enemy update
 			if (enemy[i].life > 0)
 			{
 				//TODO : 총알이 관통하는 버그 수정할 것 
@@ -252,13 +280,7 @@ int main(void)
 			}
 		}
 
-		//TODO : 총알이 한 번만 발사되는 버그 수정하기 
-		if (bullet.is_fire) {
-			bullet.sprite.move(bullet.speed, 0);
-			if (bullet.sprite.getPosition().x > W_WIDTH) {
-				bullet.is_fire = 0;
-			}
-		}
+		
 		if (player.life <= 0) {
 			is_gameover = 1;
 		}
