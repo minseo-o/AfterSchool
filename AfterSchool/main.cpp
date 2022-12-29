@@ -25,12 +25,14 @@ struct Bullet {
 	RectangleShape sprite;
 	//int speed;
 	int is_fire;
+	
 
 };
 struct Item {
 	RectangleShape sprite;
 	int delay;
 	int is_presented;
+	long presented_time;
 };
 
 struct Textures {
@@ -54,10 +56,11 @@ int is_collide(RectangleShape obj1, RectangleShape obj2) {
 }
 
 //전역변수
-const int ENEMY_NUM = 10;
-const int W_WIDTH = 1200, W_HEIGHT = 600;
-const int GO_WIDTH = 700, GO_HEIGHT = 300;
-const int BULLET_NUM = 50;
+const int ENEMY_NUM = 10;//enemy의 최대개수
+const int ITEM_NUM = 2;//아이템의 최대개수
+const int W_WIDTH = 1200, W_HEIGHT = 600;// 창의 크기
+const int GO_WIDTH = 700, GO_HEIGHT = 300;//게임오버의 그림 크기
+const int BULLET_NUM = 50; //총알 갯수
 
 int main(void)
 {
@@ -128,7 +131,7 @@ int main(void)
 	Sound Bullet_sound;
 	Bullet_sound.setBuffer(sb.gun);
 	struct Bullet bullet[BULLET_NUM];
-
+	
 	for (int i = 0; i < BULLET_NUM; i++) {
 		bullet[i].sprite.setTexture(&t.bullet);
 		bullet[i].sprite.setSize(Vector2f(35, 35));
@@ -141,6 +144,7 @@ int main(void)
 	struct Enemy enemy[ENEMY_NUM];
 	Sound enemy_explosion_sound;
 	enemy_explosion_sound.setBuffer(sb.bubble);
+	enemy_explosion_sound.setVolume(200);
 	int enemy_score = 100;
 	int enemy_respawn_time = 8;
 	// enemy 초기화
@@ -157,8 +161,15 @@ int main(void)
 	struct Item item[2];
 	item[0].sprite.setTexture(&t.item_speed);
 	item[0].delay = 25000;// 25초
-	item[0].sprite.setSize(Vector2f(70, 70));
-	item[0].is_presented = 1;
+	item[1].sprite.setTexture(&t.item_delay);
+	item[1].delay = 20000;
+	for (int i = 0; i <ITEM_NUM; i++) {
+		item[i].sprite.setSize(Vector2f(70, 70));
+		item[i].is_presented = 0;
+		item[i].presented_time = 0;
+	}
+	
+
 	// 윈도가 열려있을 때까지 반복
 	while (window.isOpen())
 	{
@@ -328,13 +339,21 @@ int main(void)
 				enemy[i].sprite.move(enemy[i].speed, 0);
 			}
 		}
-
+		for (int i = 0; i < ITEM_NUM; i++) {
+			if (!item[i].is_presented) {
+				if (spent_time - item[i].presented_time > item[i].delay) {
+					item[i].sprite.setPosition((rand() % W_WIDTH) * 0.8, (rand() % W_HEIGHT) * 0.8);
+					item[i].is_presented = 1;
+				}
+			}
+		}
+		
 		
 		if (player.life <= 0) {
 			is_gameover = 1;
 		}
 		
-		sprintf(info, "life : %dscore:%d time:%d"
+		sprintf(info, "geumbungeoui eomma chajgi daejagjeon life : %dscore:%d time:%d"
 			,player.life, player.score, spent_time / 1000);
 		text.setString(info);
 
