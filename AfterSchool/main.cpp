@@ -27,7 +27,7 @@ struct Enemy {
 
 struct Bullet {
 	RectangleShape sprite;
-	int speed;
+	//int speed;
 	int is_fire;
 
 };
@@ -49,6 +49,7 @@ int is_collide(RectangleShape obj1, RectangleShape obj2) {
 const int ENEMY_NUM = 10;
 const int W_WIDTH = 1200, W_HEIGHT = 600;
 const int GO_WIDTH = 700, GO_HEIGHT = 300;
+const int BULLET_NUM = 50;
 
 int main(void)
 {
@@ -108,12 +109,17 @@ int main(void)
 	player.score = 0;
 
 	// 총알
-	struct Bullet bullet;
-	bullet.sprite.setTexture(&t.bullet);
-	bullet.sprite.setSize(Vector2f(35,35));
-	bullet.sprite.setPosition(player.x+110, player.y+105);	 //임시 테스트
-	bullet.speed = 20;
-	bullet.is_fire = 0;
+	int bullet_idx = 0;
+	int bullet_speed = 20;
+	struct Bullet bullet[BULLET_NUM];
+
+	for (int i = 0; i < BULLET_NUM; i++) {
+		bullet[i].sprite.setTexture(&t.bullet);
+		bullet[i].sprite.setSize(Vector2f(35, 35));
+		bullet[i].sprite.setPosition(player.x + 110, player.y + 105);	 //임시 테스트
+		bullet[i].is_fire = 0;
+	}
+
 
 	// 적(enemy)
 	struct Enemy enemy[ENEMY_NUM];
@@ -198,33 +204,41 @@ int main(void)
 			player.sprite.setPosition(0, player.sprite.getPosition().y);
 		}
 		
-		else if (player.sprite.getPosition().x > W_WIDTH) {
-			player.sprite.setPosition(W_WIDTH, player.sprite.getPosition().y);
+		else if (player.sprite.getPosition().x > W_WIDTH-210) {
+			player.sprite.setPosition(W_WIDTH-210, player.sprite.getPosition().y);
 		}
 		if (player.sprite.getPosition().y < 0) {
 			player.sprite.setPosition( player.sprite.getPosition().x,0);
 		}
-		else if (player.sprite.getPosition().y > W_HEIGHT) {
-			player.sprite.setPosition(player.sprite.getPosition().x, W_HEIGHT);
+		else if (player.sprite.getPosition().y > W_HEIGHT-100) {
+			player.sprite.setPosition(player.sprite.getPosition().x, W_HEIGHT-100);
 		}
 		 
 		/* bullet undate */
+		for (int i = 0; i < BULLET_NUM; i++) {
+
+		}
 		if (Keyboard::isKeyPressed(Keyboard::Space))
 		{
-			if (!bullet.is_fire) {
-				bullet.sprite.setPosition(player.x + 50, player.y + 15);
-				bullet.is_fire = 1;
+			if (!bullet[bullet_idx].is_fire) {
+
+				bullet[bullet_idx].sprite.setPosition(player.x + 50, player.y + 15);
+				bullet[bullet_idx].is_fire = 1;
+				bullet_idx++;
 
 			}
 
 		}
-		//TODO : 총알이 한 번만 발사되는 버그 수정하기 
-		if (bullet.is_fire) {
-			bullet.sprite.move(bullet.speed, 0);
-			if (bullet.sprite.getPosition().x > W_WIDTH) {
-				bullet.is_fire = 0;
+		for (int i = 0; i < BULLET_NUM; i++) {
+			//TODO : 총알이 한 번만 발사되는 버그 수정하기 
+			if (bullet[i].is_fire) {
+				bullet[i].sprite.move(bullet_speed, 0);
+				if (bullet[i].sprite.getPosition().x > W_WIDTH) {
+					bullet[i].is_fire = 0;
+				}
 			}
 		}
+		
 
 		/* enemy update*/
 		for (int i = 0; i < ENEMY_NUM; i++)
@@ -262,19 +276,21 @@ int main(void)
 
 				}
 				//총알과 enemy 충돌
-				if ( is_collide(bullet.sprite, enemy[i].sprite))
+				for (int j = 0; j < BULLET_NUM; j++) {
+					if (is_collide(bullet[j].sprite, enemy[i].sprite)) {
+						if (bullet[j].is_fire) {
+							enemy[i].life -= 1;
+							player.score += enemy[i].score;
 
-				{
-
-					enemy[i].life -= 1;
-					player.score += enemy[i].score;
-
-					// TODO : 코드 refactoring 필요
-					if (enemy[i].life == 0)
-					{
-						enemy[i].explosion_sound.play();
+							// TODO : 코드 refactoring 필요
+							if (enemy[i].life == 0)
+							{
+								enemy[i].explosion_sound.play();
+							}
+							bullet[j].is_fire = 0;
+						}
+						
 					}
-					bullet.is_fire = 0;
 				}
 				enemy[i].sprite.move(enemy[i].speed, 0);
 			}
@@ -291,10 +307,12 @@ int main(void)
 
 		window.clear(Color::Black);
 		window.draw(bg_sprite);
-		if (bullet.is_fire) {
-			window.draw(bullet.sprite);
+		for (int i = 0; i < BULLET_NUM; i++) {
+			if (bullet[i].is_fire) {
+				window.draw(bullet[i].sprite);
+			}
 		}
-		window.draw(bullet.sprite);
+		
 		// draw는 나중에 호출할수록 우선순위가 높아짐
 		for (int i = 0; i < ENEMY_NUM; i++)
 			if (enemy[i].life > 0)
