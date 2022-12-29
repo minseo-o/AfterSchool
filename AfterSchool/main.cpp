@@ -68,6 +68,7 @@ int main(void)
 	long start_time = clock();	// 게임 시작시간
 	long spent_time;			// 게임 진행시간
 	int is_gameover = 0;
+	long fired_time = 0; //최근에 발사한 시간 
 	//BGM
 	SoundBuffer BGM_buffer;
 	BGM_buffer.loadFromFile("./resources/sounds/bgm.ogg");
@@ -109,14 +110,16 @@ int main(void)
 	player.score = 0;
 
 	// 총알
+	int bullet_deplay=500;
 	int bullet_idx = 0;
 	int bullet_speed = 20;
+
 	struct Bullet bullet[BULLET_NUM];
 
 	for (int i = 0; i < BULLET_NUM; i++) {
 		bullet[i].sprite.setTexture(&t.bullet);
 		bullet[i].sprite.setSize(Vector2f(35, 35));
-		bullet[i].sprite.setPosition(player.x + 110, player.y + 105);	 //임시 테스트
+		bullet[i].sprite.setPosition(player.x + 100, player.y + 50);	 //임시 테스트
 		bullet[i].is_fire = 0;
 	}
 
@@ -196,6 +199,7 @@ int main(void)
 		}
 		if (Keyboard::isKeyPressed(Keyboard::Down))
 		{
+		
 			player.sprite.move(0, player.speed);
 		}	// 방향키 end
 		//Player 이동범위 제한
@@ -220,17 +224,23 @@ int main(void)
 		}
 		if (Keyboard::isKeyPressed(Keyboard::Space))
 		{
-			if (!bullet[bullet_idx].is_fire) {
+			if (spent_time-fired_time> bullet_deplay) {
 
-				bullet[bullet_idx].sprite.setPosition(player.x + 50, player.y + 15);
-				bullet[bullet_idx].is_fire = 1;
-				bullet_idx++;
+				if (!bullet[bullet_idx].is_fire) {
 
+					bullet[bullet_idx].sprite.setPosition(player.x + 200, player.y + 50);
+					bullet[bullet_idx].is_fire = 1;
+					bullet_idx++;
+					bullet_idx = bullet_idx % BULLET_NUM;
+					fired_time = spent_time;
+
+				}
 			}
+			
 
 		}
 		for (int i = 0; i < BULLET_NUM; i++) {
-			//TODO : 총알이 한 번만 발사되는 버그 수정하기 
+			
 			if (bullet[i].is_fire) {
 				bullet[i].sprite.move(bullet_speed, 0);
 				if (bullet[i].sprite.getPosition().x > W_WIDTH) {
