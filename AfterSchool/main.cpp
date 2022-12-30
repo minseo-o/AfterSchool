@@ -19,6 +19,7 @@ using namespace sf;
 struct Player {
 	RectangleShape sprite;
 	int speed;
+	int speed_max;
 	int score;
 	int life;
 	float x, y;		// 플레이어 좌표
@@ -41,7 +42,7 @@ struct Item {
 	int delay;
 	int is_presented;		// 아이템이 떳는지?
 	long presented_time;
-	int type;				//아이템 타입
+	enum item_type type;				//아이템 타입
 };
 
 struct Textures {
@@ -58,6 +59,11 @@ struct SButters {
 	SoundBuffer BGM;
 	SoundBuffer bubble;
 	SoundBuffer gun;
+};
+
+enum item_type {
+	SPEED,	//0
+	DELAY	//1
 };
 
 // obj1과 obj2의 충돌여부. 충돌하면 1을 반환, 충돌안하면 0을 반환
@@ -139,11 +145,13 @@ int main(void)
 	player.speed = 5;
 	player.score = 0;
 	player.life = 10;
+	player.speed_max = 15;
 
 	// 총알
 	int bullet_speed = 20;
 	int bullet_idx = 0;
 	int bullet_delay = 500;		// 딜레이 0.5초
+	int bullet_delay_max = 100;
 	Sound bullet_sound;
 	bullet_sound.setBuffer(sb.bubble);
 
@@ -177,10 +185,10 @@ int main(void)
 	struct Item item[ITEM_NUM];
 	item[0].sprite.setTexture(&t.item_speed);
 	item[0].delay = 25000;	// 25초
-	item[0].type = 0;
+	item[0].type = SPEED;
 	item[1].sprite.setTexture(&t.item_delay);
 	item[1].delay = 20000;
-	item[1].type = 1;
+	item[1].type = DELAY;
 	for (int i = 0; i < ITEM_NUM; i++)
 	{
 		item[i].sprite.setSize(Vector2f(70, 70));
@@ -376,11 +384,17 @@ int main(void)
 			{
 				if (is_collide(player.sprite, item[i].sprite)) {
 					switch (item[i].type) {
-					case 0:		//플레이어 이동 속도 증가
+					case SPEED:		//플레이어 이동 속도 증가
 						player.speed += 2;
+						if (player.speed > player.speed_max) {
+							player.speed = player.speed_max;
+						}
 						break;
-					case 1:		//플레이어 공격 속도 증가
+					case DELAY:		//플레이어 공격 속도 증가
 						bullet_delay -= 100;
+						if (bullet_delay < bullet_delay_max) {
+							bullet_delay = bullet_delay_max;
+						}
 						break;
 					}
 					item[i].is_presented = 0;
