@@ -43,6 +43,7 @@ struct Item {
 	int is_presented;		// 아이템이 떳는지?
 	long presented_time;
 	enum item_type type;				//아이템 타입
+	Sound sound;
 };
 
 struct Textures {
@@ -399,6 +400,7 @@ int main(void)
 					}
 					item[i].is_presented = 0;
 					item[i].presented_time = spent_time;
+					item[i].sound.play();
 				}
 				
 			}
